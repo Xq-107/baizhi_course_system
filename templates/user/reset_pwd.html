@@ -1,0 +1,123 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>百知Python课程管理系统-重置</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
+    <style>
+        .reg_form {
+            margin: 65px 0 0 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="register_con">
+    <div class="l_con fl">
+        <a class="reg_logo"><img src="/static/images/bz_logo.gif"></a>
+        <div class="reg_slogan">站在时代风口 · 抢占人工智能</div>
+        <div class="reg_banner"></div>
+    </div>
+
+    <div class="r_con fr">
+        <div class="reg_title clearfix">
+            <h1>重置密码</h1>
+        </div>
+        <div class="reg_form clearfix">
+            <form id="form1">
+                {% csrf_token %}
+                <ul>
+                    <li>
+                        <label>输入密码:</label>
+                        <input type="password" name="pwd" id="user_pwd" placeholder="请输入密码">
+                        <span class="error_tip">提示信息</span>
+                    </li>
+                    <li>
+                        <label>确认密码:</label>
+                        <input type="password" name="cpwd" id="confirm-pwd" placeholder="请输入确认密码">
+                        <span class="error_tip">提示信息</span>
+                    </li>
+
+                    <li class="reg_sub">
+                        <input type="button" value="提交" name="submit">
+                    </li>
+                </ul>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+<div class="footer no-mp">
+    <div class="foot_link">
+        <a href="#">关于我们</a>
+        <span>|</span>
+        <a href="#">联系我们</a>
+        <span>|</span>
+        <a href="#">招聘人才</a>
+        <span>|</span>
+        <a href="#">友情链接</a>
+    </div>
+    <p>CopyRight © 2020 北京百知教育科技有限公司 All Rights Reserved</p>
+    <p>电话：010-****888 京ICP备*******8号</p>
+</div>
+
+
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<script src="/static/js/reset_pwd.js"></script>
+<script>
+    $(function () {
+        $("[name='submit']").click(function () {
+            var pwd = $("[name='pwd']").val();
+            var cpwd = $("[name='cpwd']").val();
+            if (pwd === "" && cpwd === "") {
+                $(".error_tip")[0].innerHTML = "密码不能为空";
+                $(".error_tip")[0].style.display = "inline-block";
+                $(".error_tip")[1].innerHTML = "确认密码不能为空";
+                $(".error_tip")[1].style.display = "inline-block";
+                return false
+            }
+            else if (pwd === "") {
+                $(".error_tip")[0].innerHTML = "密码不能为空";
+                $(".error_tip")[0].style.display = "inline-block";
+                return false
+            }
+            else if (cpwd === "") {
+                $(".error_tip")[1].innerHTML = "确认密码不能为空";
+                $(".error_tip")[1].style.display = "inline-block";
+                return false
+            }
+            else {
+                var count = 0;
+                $(".error_tip").each(function () {
+                    if ($(this)[0].style.display === "none") {
+                        count++
+                    }
+                });
+                if (count === 2) {
+                    $.ajax({
+                       type:"post",
+                       url:"{% url 'user:reset_pwd_sql' %}",
+                       data: $("#form1").serialize(),
+                       success:function (resp) {
+                           console.log(resp);
+                           if(resp === "yes"){
+                                location.href = "{% url 'user:login' %}";
+                           }else{
+                               alert("重置密码失败！")
+                           }
+                       }
+                    });
+                }
+                else {
+                    return false
+                }
+            }
+
+        });
+    });
+</script>
+</body>
+</html>

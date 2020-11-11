@@ -1,0 +1,117 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>百知Python课程管理系统-忘记密码</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
+    <style>
+        .reg_form {
+            margin: 65px 0 0 30px;
+        }
+    </style>
+</head>
+<body>
+<div class="register_con">
+    <div class="l_con fl">
+        <a class="reg_logo"><img src="/static/images/bz_logo.gif"></a>
+        <div class="reg_slogan">站在时代风口 · 抢占人工智能</div>
+        <div class="reg_banner"></div>
+    </div>
+
+    <div class="r_con fr">
+        <div class="reg_title clearfix">
+            <h1>密码找回</h1>
+        </div>
+        <div class="reg_form clearfix">
+            <form id="form1">
+                {% csrf_token %}
+                <ul>
+                    <li>
+                        <label>用户名:</label>
+                        <input type="text" name="user_name" id="user_name" placeholder="请输入真实姓名">
+                        <span class="user_error" style="margin-left:70px;">提示信息</span>
+                    </li>
+                    <li>
+                        <label>邮箱:</label>
+                        <input type="text" name="email" id="email" placeholder="请输入邮箱">
+                        <span class="error_tip">提示信息</span>
+                    </li>
+
+                    <li class="reg_sub">
+                        <input type="button" value="提交" name="submit">
+                    </li>
+                </ul>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+<div class="footer no-mp">
+    <div class="foot_link">
+        <a href="#">关于我们</a>
+        <span>|</span>
+        <a href="#">联系我们</a>
+        <span>|</span>
+        <a href="#">招聘人才</a>
+        <span>|</span>
+        <a href="#">友情链接</a>
+    </div>
+    <p>CopyRight © 2020 北京百知教育科技有限公司 All Rights Reserved</p>
+    <p>电话：010-****888 京ICP备*******8号</p>
+</div>
+
+
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<script src="/static/js/forget_pwd.js"></script>
+<script>
+    $(function () {
+        $("[name='submit']").click(function () {
+            var username = $("[name='user_name']").val();
+            var email = $("[name='email']").val();
+            if (username === "" && email === "") {
+                $(".user_error").html("用户名不能为空");
+                $(".user_error").css("display", "inline-block");
+                $(".error_tip").html("邮箱不能为空");
+                $(".error_tip").css("display", "inline-block");
+                return false
+            }
+            else if (username === "") {
+                $(".user_error").html("用户名不能为空");
+                $(".user_error").css("display", "inline-block");
+                return false
+            }
+            else if (email === "") {
+                $(".error_tip").html("邮箱不能为空");
+                $(".error_tip").css("display", "inline-block");
+                return false
+            }
+            else {
+                $.ajax({
+                    type: "post",
+                    url: '{% url 'user:forget_sql' %}',
+                    data: $("#form1").serialize(),
+                    success: function (resp) {
+                        if (resp === "no") {
+                            $(".user_error").html("用户名不存在");
+                            $(".user_error").css("display", "inline-block");
+                        }
+                        else if (resp === "yes_no") {
+                            alert("该邮箱与您绑定的账号不同！");
+                            $(".error_tip").html("邮箱错误！");
+                            $(".error_tip").css("display", "inline-block");
+                        }
+                        else if (resp === "yes") {
+                            location.href = "{% url 'user:reset_pwd' %}"
+                        }
+                    }
+                })
+            }
+        });
+    });
+</script>
+</body>
+</html>

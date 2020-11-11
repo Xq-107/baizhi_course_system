@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8"/>
+    <!--<meta name="viewport"-->
+    <!--content="width=device-width,initial-scale=1,minimum-scale=1,maximum-scale=1,user-scalable=no"/>-->
+    <link rel="stylesheet" type="text/css" href="/static/css/bootstrap.css"/>
+    <link rel="stylesheet" href="/static/css/bodymain.css">
+    <link rel="stylesheet" href="/static/css/home.css">
+    <title>百知课程后台管理系统-首页</title>
+    <style>
+        .hide_scorll {
+            max-height: 469px;
+            overflow: auto;
+        }
+
+        .hide_scorll::-webkit-scrollbar {
+            display: none
+        }
+    </style>
+</head>
+<body>
+<!--导航-->
+<nav class="navbar navbar-default nav-self">
+    <div class="container-fluid">
+        <div class="navbar-header">
+            <a class="navbar-brand" href="{% url 'user:login' %}">百知课程后台管理系统</a>
+        </div>
+        <div class="collapse navbar-collapse">
+            <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <a href="{% url 'user:login' %}" role="button">{{ username }} <span
+                            class="glyphicon glyphicon-log-in"></span></a>
+                </li>
+                <li>
+                    <a href="{% url 'user:logout' %}" id="exit">退出 <span class="glyphicon glyphicon-log-out"></span></a>
+                </li>
+            </ul>
+            <form class="navbar-form navbar-right">
+                <div class="form-group">
+                    <input type="text" class="form-control" placeholder="">
+                </div>
+                <div class="btn-group" role="group" aria-label="...">
+                    <div class="btn-group" role="group">
+                        <button type="button" class="btn btn-default dropdown-toggle" data-toggle="dropdown"
+                                aria-haspopup="true" aria-expanded="false">
+                            <span class="glyphicon glyphicon-search"></span>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</nav>
+<!--内容面板-->
+<div class="container-fluid">
+    <div class="row">
+        <!-- Nav tabs -->
+        <div class="panel-group col-sm-2 left-side-bar" id="accordion" role="tablist" aria-multiselectable="true">
+            <div>
+                <div class="panel panel-default hide_scorll">
+                    <div class="panel-heading left-side-header">百知课程</div>
+                    {% for cate in cates %}
+                        <div class="course-h5"><a
+                                href="{% url 'course:course' %}?level={{ cate.level }}&id={{ cate.id }}">{{ cate.title }}</a>
+                        </div>
+                        <div class="list-group">
+                            {% for sub_cate in sub_cates %}
+                                {% if sub_cate.parent_id == cate.id %}
+                                    <a href="{% url 'course:course' %}?level={{ sub_cate.level }}&id={{ sub_cate.id }}"
+                                       class="list-group-item">{{ sub_cate.title }}</a>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        <!-- Tab panes 详情展示面板 -->
+        <div class="tab-content col-sm-10 right-side">
+
+            <div class="panel panel-default right-side-content">
+                <div class="page-header">
+                    <h3>博客文章</h3>
+                </div>
+                <div class="panel-body caret_parent">
+                    <a href="javascript:void(0)" class="btn btn-default sort" type="true_read">
+                        阅读量
+                        <span class="glyphicon glyphicon-arrow-down"></span>
+                    </a>
+                    <a href="javascript:void(0)" class="btn btn-default sort" type="true_time">
+                        发布时间
+                        <span class="glyphicon glyphicon-arrow-down"></span>
+                    </a>
+                    <a href="{% url 'course:add_article' %}" class="btn pull-right base-color add-course"><span
+                            class="glyphicon glyphicon-plus"></span> 增加文章</a>
+                    <a href="{% url 'course:add_course' %}" class="btn pull-right base-color"><span
+                            class="glyphicon glyphicon-plus"></span> 增加课程/分类</a>
+                </div>
+                <div class="panel-heading">文章列表</div>
+                <table class="table table-bordered table-striped table-hover">
+                    <thead>
+                    <tr>
+                        <th><input type="checkbox"/></th>
+                        <th>ID</th>
+                        <th>文章标题</th>
+                        <th>所属课程</th>
+                        <th>浏览量</th>
+                        <th>发布日期</th>
+                        <th>操作</th>
+                    </tr>
+                    </thead>
+                    <tbody class="refresh">
+                    {% for page in pages %}
+                        <tr class="article_list">
+                            <td>
+                                <input type="checkbox" class="checks"/>
+                            </td>
+                            <td class="id">{{ page.id }}</td>
+                            <td>
+                                <a href="{% url 'course:update' %}?id={{ page.id }}" style="text-decoration: none">
+                                    {{ page.title }}
+                                </a>
+                            </td>
+                            <td>{{ page.cate.title }}</td>
+                            <td>{{ page.count }}</td>
+                            <td>{{ page.publish_time|date:'Y年m月d日 H:i' }}</td>
+                            <td>
+                                <button class="btn btn-warning del">删除</button>
+                            </td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                <nav aria-label="Page navigation" class="pull-right pagitor-manager">
+                    <ul class="pagination" id="pages">
+                        {% if pages.has_previous %}
+                            <li class="page_number">
+                                <a href="{% url 'course:index' %}?number={{ pages.previous_page_number }}&type={{ type }}"
+                                   aria-label="Previous">
+                                    <span aria-hidden="true">&laquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                        {% for n in pages.paginator.page_range %}
+                            <li class="page_number"><a
+                                    href="{% url 'course:index' %}?number={{ n }}&type={{ type }}">{{ n }}</a></li>
+                        {% endfor %}
+                        {% if pages.has_next %}
+                            <li class="page_number">
+                                <a href="{% url 'course:index' %}?number={{ pages.next_page_number }}&type={{ type }}"
+                                   aria-label="Next">
+                                    <span aria-hidden="true">&raquo;</span>
+                                </a>
+                            </li>
+                        {% endif %}
+                    </ul>
+                </nav>
+            </div>
+            <!--分页显示-->
+        </div>
+
+    </div>
+
+</div>
+<div class="footer">
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-4">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h4><span class="glyphicon glyphicon-heart-empty glyphicon"></span> 关注我们</h4>
+                        <p>最受欢迎的管理平台</p>
+                        <p><a href="#" class="ic_df"> 新浪微博</a></p>
+                        <p><a href="#" class="ic_weichat"> 官方微信</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h4><span class="glyphicon glyphicon-king"> 开发平台</span></h4>
+                        <p>加入开发平台，尊享会员福利，成为资深程序猿</p>
+                        <p class="p_idea"><a href="http://www.baizhibest.com"
+                                             class="btn btn-default btn-lg idea">我要开发</a></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-sm-4">
+                <div class="thumbnail">
+                    <div class="caption">
+                        <h4><span class="glyphicon glyphicon-phone-alt"></span> 关于我们</h4>
+                        <p>欢迎反馈宝贵意见</p>
+                        <p class="p_idea"><a href="http://www.baizhibest.com"
+                                             class="btn btn-default btn-lg idea">意见反馈</a></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12 cp_info">
+                <div class="no-mp">
+                    <p>CopyRight © 2020 北京百知教育科技有限公司 All Rights Reserved</p>
+                    <p>电话：010-****888 京ICP备*******8号</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="/static/js/jquery.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/js/bootstrap.js" type="text/javascript" charset="utf-8"></script>
+<script src="/static/js/jquery-3.3.1.min.js" type="text/javascript" charset="utf-8"></script>
+<script>
+    function sort() {
+        $(".sort").each(function () {
+            if ("{{ type }}" === "true_read") {
+                $(this).attr("type", "false_read");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-up");
+                return false
+            }
+            else if ("{{ type }}" === "false_read") {
+                $(this).attr("type", "true_read");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-down");
+                return false
+            }
+            else if ("{{ type }}" === "true_time") {
+                $(this).attr("type", "false_time");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-up");
+                return false
+            }
+            else if ("{{ type }}" === "false_time") {
+                $(this).attr("type", "true_time");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-down");
+                return false
+            }
+        });
+    }
+
+    function show(resp) {
+        $(".article_list").each(function () {
+            $(this).remove()
+        });
+        var obj = resp["pages"];
+        str1 = '';
+        for (var i = 0; i < obj.length; i++) {
+            var page = obj[i];
+            str1 += '<tr class="article_list">';
+            str1 += '<td><input type="checkbox" class="checks"/></td>';
+            str1 += '<td class="id">' + page.id + '</td>';
+            str1 += '<td><a href=' + '{% url "course:update" %}?id=' + page.id + 'style="text-decoration: none">' + page.title + '</a></td>';
+            str1 += '<td>' + page.cate_title + '</td>';
+            str1 += '<td>' + page.count + '</td>';
+            str1 += '<td>' + page.publish_time + '</td>';
+            str1 += '<td><button class="btn btn-warning del">删除</button></td>';
+            str1 += "</tr>";
+        }
+        $("tbody").append(str1);
+    }
+
+    function shows() {
+        $(".del").each(function (i) {
+            $(this).on("click", function () {
+                if (confirm("您确定要删除吗？")) {
+                    $.ajax({
+                        type: "post",
+                        url: "{% url 'course:delete' %}",
+                        data: "csrfmiddlewaretoken={{ csrf_token }}&delete_id=" + $(".id")[i].innerHTML + "&number={{ number }}",
+                        success: function (resp) {
+                            show(resp);
+                            shows();
+                        }
+                    });
+                    return true
+                } else {
+                    return false
+                }
+            });
+        });
+    }
+
+    $(function () {
+        {#sort();#}
+        shows();
+
+        $(".sort").click(function () {
+            $.ajax({
+                type: "post",
+                url: "{% url 'course:sorting' %}",
+                data: "csrfmiddlewaretoken={{ csrf_token }}&level={{ level }}&id={{ id }}&number={{ number }}&type=" + $(this).attr("type"),
+                success: function (resp) {
+                    show(resp)
+                }
+            });
+            if ($(this).attr("type") === "true_read") {
+                $(this).attr("type", "false_read");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-up");
+            }
+            else if ($(this).attr("type") === "false_read") {
+                $(this).attr("type", "true_read");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-down");
+            }
+            else if ($(this).attr("type") === "true_time") {
+                $(this).attr("type", "false_time");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-up");
+            }
+            else if ($(this).attr("type") === "false_time") {
+                $(this).attr("type", "true_time");
+                $(this).find("span").attr("class", "glyphicon glyphicon-arrow-down");
+            }
+        });
+
+    });
+</script>
+</body>
+</html>

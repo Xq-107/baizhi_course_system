@@ -1,0 +1,224 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html;charset=UTF-8">
+    <title>百知Python课程管理系统-注册</title>
+    <link rel="stylesheet" type="text/css" href="/static/css/reset.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/main.css">
+    <script type="text/javascript" src="/static/js/jquery-1.12.4.min.js"></script>
+    {#    <script type="text/javascript" src="/static/js/register.js"></script>#}
+</head>
+<body>
+<div class="register_con">
+    <div class="l_con fl">
+        <a class="reg_logo"><img src="/static/images/bz_logo.gif"></a>
+        <div class="reg_slogan">站在时代风口 · 抢占人工智能</div>
+        <div class="reg_banner"></div>
+    </div>
+
+    <div class="r_con fr">
+        <div class="reg_title clearfix">
+            <h1>用户注册</h1>
+            <a href="{% url 'user:login' %}">登录</a>
+        </div>
+        <div class="reg_form clearfix">
+            <form action="" id="form1">
+                {% csrf_token %}
+                <ul>
+                    <li>
+                        <label>用户名:</label>
+                        <input type="text" name="user_name" id="user_name" placeholder="请输入真实姓名">
+                        <span class="error_tip">提示信息</span>
+                    </li>
+                    <li>
+                        <label>密码:</label>
+                        <input type="password" name="pwd" id="pwd" placeholder="请输入密码">
+                        <span class="error_tip">提示信息</span>
+                    </li>
+                    <li>
+                        <label>确认密码:</label>
+                        <input type="password" name="cpwd" id="cpwd" placeholder="请输入确认密码">
+                        <span class="error_tip">提示信息</span>
+                    </li>
+                    <li>
+                        <label>邮箱:</label>
+                        <input type="text" name="email" id="email" placeholder="请输入邮箱">
+                        <span class="error_tip">提示信息</span>
+                    </li>
+                    <li>
+                        <label>验证码:</label>
+                        <input type="text" name="captcha" id="captcha" style="width: 100px;">
+                        <img src="{% url 'user:get_captcha' %}" alt="图片走丢了" width="90" class="captcha" id="capt"
+                             style="cursor: pointer;margin-left:3px;margin-top:2.5px;">
+                        <a href="javascript:void(0)" style="text-decoration: underline;" class="captcha">看不清，换一张</a>
+                        <span class="error_tip" id="tip_captcha" style="margin-right:200px;">提示信息</span>
+                    </li>
+                    <li class="agreement">
+                        <input type="checkbox" name="allow" id="allow" checked="checked" value="allow">
+                        <label>同意”百知课程管理系统使用协议“</label>
+                        <span class="error_tip2">提示信息</span>
+                    </li>
+                    <li class="reg_sub">
+                        <input type="button" value="注 册" name="submit">
+                    </li>
+                </ul>
+            </form>
+        </div>
+
+    </div>
+
+</div>
+
+<div class="footer no-mp">
+    <div class="foot_link">
+        <a href="#">关于我们</a>
+        <span>|</span>
+        <a href="#">联系我们</a>
+        <span>|</span>
+        <a href="#">招聘人才</a>
+        <span>|</span>
+        <a href="#">友情链接</a>
+    </div>
+    <p>CopyRight © 2020 北京百知教育科技有限公司 All Rights Reserved</p>
+    <p>电话：010-****888 京ICP备*******8号</p>
+</div>
+
+
+<script src="/static/js/jquery-3.3.1.min.js"></script>
+<script src="/static/js/register.js"></script>
+<script>
+    $(function () {
+        //单机图片跟换一张更换验证码图片
+        $(".captcha").click(function () {
+            console.log("哈哈哈");
+            $("#capt").attr("src", "{% url 'user:get_captcha' %}" + "?" + new Date().getTime())
+        });
+        //用户名失去光标时对用户名进行正则验证
+        $("[name='user_name']").blur(function () {
+            var username = $(this).val();
+            var regex = /^[\u4E00-\u9FA5]{2,10}$/;
+            var result = regex.test(username);
+            if (result) {
+                //验证用户名是否存在
+                $.ajax({
+                    type: "post",
+                    url: "{% url 'user:register_username' %}",
+                    data: "csrfmiddlewaretoken={{ csrf_token }}&user_name=" + $(this).val(),
+                    success: function (resp) {
+                        if (resp === "yes") {
+                            $(".error_tip")[0].style.display = "none";
+                        }
+                        else if (resp === "no") {
+                            $(".error_tip")[0].innerHTML = "用户名已存在";
+                            $(".error_tip")[0].style.display = "inline-block";
+                        }
+                    }
+                });
+            }
+            else if ($(this).val() === "") {
+                $(".error_tip")[0].innerHTML = "用户名不能为空";
+                $(".error_tip")[0].style.display = "inline-block";
+            }
+            else {
+                $(".error_tip")[0].innerHTML = "用户名必须为2到10位中文名称";
+                $(".error_tip")[0].style.display = "inline-block";
+            }
+        });
+
+        //验证码失去光标时
+        $("[name='captcha']").blur(function () {
+            if ($(this).val() === "") {
+                $(".error_tip")[4].innerHTML = "请输入验证码";
+                $(".error_tip")[4].style.display = "inline-block";
+            }
+            else {
+                $.ajax({
+                    type: "post",
+                    url: "{% url 'user:register_captcha' %}",
+                    data: "csrfmiddlewaretoken={{ csrf_token }}&code=" + $(this).val(),
+                    success: function (resp) {
+                        if (resp === "yes") {
+                            $(".error_tip")[4].style.display = "none";
+                        }
+                        else if (resp === "no") {
+                            $(".error_tip")[4].innerHTML = "验证码错误";
+                            $(".error_tip")[4].style.display = "inline-block";
+                        }
+                    }
+                });
+            }
+        });
+
+        //单机注册按钮
+        $("[name='submit']").click(function () {
+            if ($("[name='user_name']").val() === "") {
+                $(".error_tip")[0].innerHTML = "用户名不能为空";
+                $(".error_tip")[0].style.display = "inline-block";
+            }
+            if ($("[name='pwd']").val() === "") {
+                $(".error_tip")[1].innerHTML = "密码不能为空";
+                $(".error_tip")[1].style.display = "inline-block";
+            }
+            if ($("[name='cpwd']").val() === "") {
+                $(".error_tip")[2].innerHTML = "";
+                $(".error_tip")[2].style.display = "inline-block";
+            }
+            if ($("[name='email']").val() === "") {
+                $(".error_tip")[3].innerHTML = "邮箱不能为空";
+                $(".error_tip")[3].style.display = "inline-block";
+            }
+            if ($("[name='captcha']").val() === "") {
+                $(".error_tip")[4].innerHTML = "验证码不能为空";
+                $(".error_tip")[4].style.display = "inline-block";
+            }
+            if ($("[name='allow']").is(':checked')) {
+                $(".error_tip2")[0].style.display = "none";
+                var count = 0;
+                $(".error_tip").each(function () {
+                    if ($(this).css("display") === "none") {
+                        count ++
+                    }
+                });
+                if (count === 5) {
+                    $.ajax({
+                        type: "post",
+                        url: "{% url 'user:register_sql' %}",
+                        data: $("#form1").serialize(),
+                        success: function (resp) {
+                            if (resp === "no") {
+                                alert("注册失败");
+                                return false
+                            }
+                            else if (resp === "exist") {
+                                alert("用户名已被注册！请返回登录界面登录！");
+                                return false
+                            }
+                            else if (resp === "yes") {
+                                if (confirm("注册成功,正在激活！")) {
+                                    location.href = "{% url 'user:login' %}";
+                                    return true
+                                }
+                                else {
+                                    return true
+                                }
+                            }
+                        }
+                    });
+                }
+                else {
+                    alert("请确认是否全部填写");
+                    return false
+                }
+            }
+            else {
+                $(".error_tip2")[0].innerHTML = "请勾选协议";
+                $(".error_tip2")[0].style.display = "inline-block";
+                return false
+            }
+        });
+
+    });
+</script>
+</body>
+</html>
